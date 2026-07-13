@@ -30,13 +30,5 @@ vercel dev
 
 Free key at [openweathermap.org/api](https://openweathermap.org/api).
 
-## Deploying
 
-```bash
-vercel
-```
-
-Add `OPENWEATHER_API_KEY` under Project → Settings → Environment Variables, then redeploy.
-
----
 <sub>Built by Hamza</sub>
