@@ -29,6 +29,7 @@ vercel dev
 ```
 
 Free key at [openweathermap.org/api](https://openweathermap.org/api).
-
+## Deployed
+https://weather-6kouiw6uh-raman0.vercel.app/
 
 <sub>Built by Hamza</sub>
