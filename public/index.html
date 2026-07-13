@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+<title>Skyline — Live Weather Dashboard</title>
+<meta name="description" content="Real-time weather forecasts with a live animated sky, 5-day outlook, and Storm Dodge — an arcade game tuned to actual wind speed." />
+<meta name="author" content="Hamza" />
+
+<!-- Favicon -->
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png" />
+<link rel="apple-touch-icon" href="/favicon.png" />
+
+<!-- Open Graph (WhatsApp, Telegram, LinkedIn, Discord, Facebook) -->
+<meta property="og:type"         content="website" />
+<meta property="og:title"        content="Skyline — Live Weather Dashboard" />
+<meta property="og:description"  content="Real-time weather with a sky that reacts to live data. Plus Storm Dodge: an arcade game tuned to actual wind speed." />
+<meta property="og:image"        content="/og-image.png" />
+<meta property="og:image:width"  content="1200" />
+<meta property="og:image:height" content="630" />
+
+<!-- Twitter / X card -->
+<meta name="twitter:card"        content="summary_large_image" />
+<meta name="twitter:title"       content="Skyline — Live Weather Dashboard" />
+<meta name="twitter:description" content="Real-time weather with a sky that reacts to live data. Plus Storm Dodge: an arcade game tuned to actual wind speed." />
+<meta name="twitter:image"       content="/og-image.png" />
+
+<!-- Theme colour (browser chrome on mobile) -->
+<meta name="theme-color" content="#0b0e14" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="css/sky.css" />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="theme-clear-day">
+
+<canvas id="sky-canvas" aria-hidden="true"></canvas>
+
+<main class="app" id="app">
+
+  <header class="topbar">
+    <div class="search-wrap">
+      <form id="search-form" class="search-pill" role="search" autocomplete="off">
+        <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M21 21l-4.35-4.35M11 19a8 8 0 1 1 0-16 8 8 0 0 1 0 16Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <input id="city-input" type="text" placeholder="Search a city…" autocomplete="off" aria-label="Search a city" aria-expanded="false" aria-controls="suggestions" role="combobox" />
+        <button type="button" id="locate-btn" class="icon-btn" title="Use my location" aria-label="Use my location">
+          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </form>
+      <ul class="suggestions" id="suggestions" role="listbox" hidden></ul>
+    </div>
+
+    <div class="topbar-actions">
+      <button type="button" id="unit-toggle" class="pill-btn" aria-label="Toggle Celsius and Fahrenheit">°C</button>
+      <button type="button" id="storm-mode-btn" class="pill-btn storm-btn">
+        <span class="storm-dot" aria-hidden="true"></span> Storm Dodge
+      </button>
+    </div>
+  </header>
+
+  <section id="status-banner" class="status-banner" hidden role="status"></section>
+
+  <section class="panel" id="panel" aria-live="polite">
+
+    <div class="panel-loading" id="panel-loading">
+      <div class="spinner" aria-hidden="true"></div>
+      <p>Reading the sky…</p>
+    </div>
+
+    <div class="panel-content" id="panel-content" hidden>
+      <div class="readout">
+        <div class="readout-icon" id="weather-icon" aria-hidden="true"></div>
+        <div class="readout-main">
+          <div class="temp" id="temp">--°</div>
+          <div class="condition" id="condition">—</div>
+          <div class="location" id="location">—</div>
+        </div>
+      </div>
+
+      <dl class="telemetry">
+        <div class="telemetry-item">
+          <dt>Feels like</dt>
+          <dd id="feels-like">--°</dd>
+        </div>
+        <div class="telemetry-item">
+          <dt>Humidity</dt>
+          <dd id="humidity">--%</dd>
+        </div>
+        <div class="telemetry-item">
+          <dt>Wind</dt>
+          <dd id="wind">-- km/h</dd>
+        </div>
+        <div class="telemetry-item">
+          <dt>Sunset</dt>
+          <dd id="sunset">--:--</dd>
+        </div>
+      </dl>
+
+      <div class="forecast-strip" id="forecast-strip" aria-label="5 day forecast"></div>
+    </div>
+  </section>
+
+  <footer class="hint" id="hint">
+    Built by Hamza · live data via OpenWeatherMap
+  </footer>
+</main>
+
+<div class="game-overlay" id="game-overlay" hidden>
+  <div class="game-frame">
+    <header class="game-header">
+      <h2>Storm Dodge</h2>
+      <button type="button" id="game-close" class="icon-btn" aria-label="Close game">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </header>
+    <p class="game-sub" id="game-sub">Dodge what's actually falling outside right now.</p>
+    <canvas id="game-canvas" width="480" height="600"></canvas>
+    <div class="game-hud">
+      <span>Score <strong id="game-score">0</strong></span>
+      <span>Best <strong id="game-best">0</strong></span>
+    </div>
+    <div class="game-start" id="game-start">
+      <button type="button" id="game-start-btn" class="pill-btn primary">Play</button>
+      <p class="game-controls-hint">Arrow keys / A·D, or drag on touch</p>
+    </div>
+    <div class="game-over" id="game-over" hidden>
+      <p>Caught one. <span id="final-score">0</span> pts</p>
+      <button type="button" id="game-retry-btn" class="pill-btn primary">Retry</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/sky.js"></script>
+<script src="js/game.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
